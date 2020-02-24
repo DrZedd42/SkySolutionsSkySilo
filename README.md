@@ -1,7 +1,8 @@
-# ERC721SmartToken
-## ERC721 token with ERC20 adapter
+# SkySolutionsSkySilos!
+## PerkPoints Go Up With Value Accumulation Thresholds Offering More PerkPoint%s as you go up in balance!
+ERC721 token with ERC20 adapter to allow for doping of ERC20 value into ERC721 NON FUNGIABLE unique assets.
 
-```ERC721SmartToken``` contract implements non-fungible tokens based on [ERC721](https://github.com/ethereum/eips/issues/721) standard 
+SkySolutionsSkySilo, the ```ERC721SmartToken``` contract implements non-fungible tokens based on [ERC721](https://github.com/ethereum/eips/issues/721) standard 
 that also supports [ERC20](https://github.com/ethereum/eips/issues/20) interface. The main idea is to create a token that can be both non-fungible and has transferable value. 
 
 Inside ERC721 contract each not fungible token represented as a NFT structure where there is a member element called ```value ```.
@@ -124,105 +125,4 @@ function _payValue(uint256 _id, uint256 _value) internal returns(uint256[4] dist
  ```
  and it will return the pool level that has made the payment, in our example it will be ```level == 1```.
 
-## TokenCrowdsurance
-
-```TokenCrowdsurance``` is ```ERC721SmartToken``` for crowdsurance products. Crowdsurance, meaning people unite in communities to provide a guarantee of compensation for unexpected loss. Using ```ERC721SmartToken``` crowdsurance product can be 'tokenized' and can be availible as ERC20 token.
-![pic](https://github.com/REGA-RS/ERC721SmartToken/blob/master/TokenCrowdsurance.png?raw=true "Crowdsurance")
-The crowdsurance business process starting from ```apply``` function that returns application ID:
-```solidity
- function apply() public returns(uint256 addId);
- ```
-There is application queue supported by the smart contract and next application to process can be obtained by the following function:
-```solidity
-function getApplication() view public returns (address member, uint256 appId);
- ```
-After that the scoring for the new member can be complited by the following call:
-```solidity
-function scoring(address _member, uint256 _score, uint256 _amount) ownerOnly public;
- ```
-The ```scoring``` can be called only by contract owner. After recieve score a new member can join the Crowdsurance smart contract using ```join``` function. 
-```solidity
-function join() public payable returns(uint256 cowdsuranceId);
-```
-This function will return the Crowdsurance NFT token ID. The ```TokenCrowdsurance``` is ```ERC721``` token and can be transfered to another holder using standard ```ERC721``` methods. To activate crowdsurance coverage the token holder must call ```activate``` function:
-```solidity
-function activate(uint256 _id) public;
-```
-after then the coverage is activated and token transfer is prohibited. In case of risk realisation the token holder can submeet claim to recieve the payment:
-```solidity
-function claim(uint256 _id, uint256 _claim) public returns(bool);
-```
-In this function the token owner provides token id ```_id``` and ```_claim``` - the claim amount. The token status will be changed to ```Claim``` and the voting process will be initiated.
-To conduct the voting process a juries must be selected randomly from ```RST``` token holders. Each jury member will be submeeted by contract owner:
-```solidity
-function addVoter(address _jury, uint256 _id) ownerOnly public;
-```
-and for each ```_jury``` will be specified the token ```_id``` for voting. Selected RST token holders could vote using the following method:
-```solidity
-function vote(uint256 _id, bool _positive) public;
-``` 
-providing the ```TokenCrowdsurance``` id and voting result ```_positive```. If ```_positive``` is ```true``` then the vote will be counted in favore of claim payment and if ```false``` then the vote will be counted as negative one. The current voting status can be recieved from the following function call:
-```solidity
-function votingStatus(uint256 _id) public view returns (bool votingEnded, uint8 positive, uint8 negative);
-```
-Need to say that the voting process have start and end time and votes can be counted only within this specific period.
-When the voting process is finished the token owner can recieve the payment calling the following method:
-```solidity
- function payment(uint256 _id) public;
- ```
- If the claim was approved by the juries then the payment amount will be transferred from ```TokenCrowdsurance``` smart contract account to the token holder account. If nobody has voted or number of votes less then the crowdsurance product ```minJuriesNumber``` parameter or ```positive``` is equal to ```negative``` then the token owner will receive join amount.
- There are number of parameters for crowdsurance product that can be utilized to adjust the product behaviour.
- ```solidity
- struct Parameters {
-        uint256     joinAmount;         // default join amount
-        uint        coverageDuration;   // coverage duration
-        uint256     maxClaimAmount;     // max claim amount
-        uint8       maxClaimNumber;     // max claim number for the contract
-        uint8       paymentRatio;       // claim to payment patio
-        uint256     maxPaymentAmount;   // max payment amount for the contract
-        uint8       minJuriesNumber;    // min juries number to count voting 
-        uint        votingDuration;     // juries voting duration
-        uint8       juriesNumber;       // number of juries
-  }
-  ``` 
-## LuggageCrowdsurance
-
-The luggage crowdsurance protection product is ```TokenCrowdsurance``` NFT721SmartToken with additional features:
-1. New member could join crowdsurance smart contract make a transfer in **RST tokens**
-1. Number of **activated** luggage protection token for each member is limited by smart contract parameter ```maxHold```
-1. Join can be allowed **only with ETH** if smart contract parameter ```ETHOnly``` is set to ```true```
-1. Member can receive a **payback** up to ```paybackRatio``` from join amount after the end of coverage  
-
-If ```ETHOnly``` is ```false``` a new member can join the luggage crowdsurance smart contract using RST tokens. If this case the member should allow a transfer of ```joinAmountRST``` specified in the ```LuggageCrowdsurance``` smart contract to the contract ```owner``` using RST ERC20 standart method:
-```solidity
-function approve(address _spender, uint256 _value) returns (bool success)
-```
-Then the new member can call ```LuggageCrowdsurance``` ```join``` method with ```value == 0``` and in this case if ```ETHOnly == false``` the ```join``` will transfer ```joinAmountRST``` to the smart contract ```owner```. 
-
-The ```LuggageCrowdsurance``` token has the following parameters:
-
-Product parameter|Value
-------------|-------------
-ERC721 Name|Luggage Crowdsurance NFT
-ERC721 Symbol|LCS
-Default join amount|0.019 ETH
-Default join RST amount|0.5 RST
-Protection period|180 days
-Default claim payment amount|4 ETH
-Maximum number of claims|1
-Maximun number of activated|5
-RST / ETH Rate|0.12 ETH
-Payback ratio|80%
-Payback period|within 48 hours
-Commission|20%
-
-After the crowdsurance coverage period is ended the token owner can recieve payback up to ```Payback ratio``` from the join amount if he/she did not recieved a payment during the crowdsurance coverage period. To get payback the owner must call the following function:
-```solidity
- function getPayback(uint256 _id) public;
- ```
- The payback amout must be seted by the contract owner before the ```getPayback``` call using:
- ```solidity
- function setPayback(uint256 _id, uint256 _amount) ownerOnly public returns (bool);
- ```
- 
 
